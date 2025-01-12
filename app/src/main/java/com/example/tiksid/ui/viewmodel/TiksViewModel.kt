@@ -53,10 +53,10 @@ class TiksViewModel: ViewModel() {
     fun getPopularMovie(){
         viewModelScope.launch {
             val req = APIRequest("Movie/Popular").execute()
-            val data = JSONObject(req.data)
-            _popularMovie.value = UiState.Success(data)
+            val popularMovie = JSONObject(req.data)
+            _popularMovie.value = UiState.Success(popularMovie)
 
-            val image = getMovieImage(data.getInt("id"))
+            val image = getMovieImage(popularMovie.getInt("id"))
             _moviePoster.value = image
 
         }
@@ -65,18 +65,18 @@ class TiksViewModel: ViewModel() {
     fun getAllMovies(){
         viewModelScope.launch {
             val req = APIRequest("Movie").execute()
-            val data = JSONArray(req.data)
-            _listMovies.value = data
+            val movies = JSONArray(req.data)
+            _listMovies.value = movies
         }
     }
 
     fun getDetailMovie(id: Int){
         viewModelScope.launch {
             val req = APIRequest("Movie/$id").execute()
-            val data = JSONObject(req.data)
-            _detailMovie.value = UiState.Success(data)
+            val movie = JSONObject(req.data)
+            _detailMovie.value = UiState.Success(movie)
 
-            val image = getMovieImage(data.getInt("id"))
+            val image = getMovieImage(movie.getInt("id"))
             _moviePoster.value = image
         }
     }
