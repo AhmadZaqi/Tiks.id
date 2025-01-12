@@ -18,11 +18,13 @@ class TiksViewModel: ViewModel() {
     private val _moviePoster = MutableStateFlow<Bitmap?>(null)
     private val _listMovies = MutableStateFlow(JSONArray())
     private val _detailMovie = MutableStateFlow<UiState<JSONObject>>(UiState.Loading)
+    private val _movieSchedule = MutableStateFlow(JSONArray())
 
     val popularMovie = _popularMovie.asStateFlow()
     val moviePoster = _moviePoster.asStateFlow()
     val listMovies = _listMovies.asStateFlow()
     val detailMovie = _detailMovie.asStateFlow()
+    val movieSchedule = _movieSchedule.asStateFlow()
 
     suspend fun postLogin(
         email: String,
@@ -76,6 +78,14 @@ class TiksViewModel: ViewModel() {
 
             val image = getMovieImage(data.getInt("id"))
             _moviePoster.value = image
+        }
+    }
+
+    fun getMovieSchedule(id: Int){
+        viewModelScope.launch {
+            val req = APIRequest("Schedule/$id").execute()
+            val schedule = JSONArray(req.data)
+            _movieSchedule.value = schedule
         }
     }
 }
