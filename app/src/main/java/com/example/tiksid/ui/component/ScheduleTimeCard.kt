@@ -35,7 +35,7 @@ fun ScheduleTimeCard(
     ){
         Text(
             text = text,
-            modifier = Modifier.padding(8.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             lineHeight = 14.sp,
             fontSize = 14.sp,
             textAlign = TextAlign.Center
