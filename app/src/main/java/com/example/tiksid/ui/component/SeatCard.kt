@@ -37,7 +37,7 @@ fun SeatCard(
                 color = backgroundColor,
                 shape = MaterialTheme.shapes.small
             )
-            .alpha(if (isAvailable) 1f else 0.4f)
+            .alpha(if (isAvailable) 1f else 0.2f)
             .clickable(enabled = isAvailable) {
                 onSelected(seatNumber)
             },
