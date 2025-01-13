@@ -34,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import com.example.tiksid.ui.common.UiState
 import com.example.tiksid.ui.component.GenreCard
 import com.example.tiksid.ui.component.ScheduleTimeCard
+import com.example.tiksid.ui.component.SeatCard
 import com.example.tiksid.ui.component.TiksDropdown
 import com.example.tiksid.ui.viewmodel.TiksViewModel
 import org.json.JSONArray
@@ -111,12 +113,27 @@ fun DetailMovieContent(
                 val theater = movieSchedule.getJSONObject(i).getString("theaterName")
                 theaters.add(theater)
             }
-            var selectedIndex by remember { mutableIntStateOf(0) }
-            var selectedDate by remember { mutableIntStateOf(0) }
-            var selectedTime by remember { mutableIntStateOf(0) }
-            val theater = movieSchedule.getJSONObject(selectedIndex)
+            var selectedTheaterIndex by remember { mutableIntStateOf(0) }
+            var selectedDateIndex by remember { mutableIntStateOf(0) }
+            var selectedTimeIndex by remember { mutableIntStateOf(0) }
+            val theater = movieSchedule.getJSONObject(selectedTheaterIndex)
             val availableDate = theater.getJSONArray("availableDate")
-            val availableTime = availableDate.getJSONObject(selectedDate).getJSONArray("availableTime")
+            val availableTime = availableDate.getJSONObject(selectedDateIndex).getJSONArray("availableTime")
+            val selectedTime = availableTime.getJSONObject(selectedTimeIndex)
+            val filledSeat = selectedTime.getJSONArray("filledSeat")
+
+            val section = theater.getInt("section")
+            val row = theater.getInt("row")
+            val column = theater.getInt("column")
+
+            val listSelectedSeat = mutableListOf<String>()
+            val listFilledSeat = mutableListOf<String>()
+            for (i in 0 until filledSeat.length()){
+                listFilledSeat.add(filledSeat.getString(i))
+            }
+
+            var alphabet = 'A'
+            var number = 1
 
             Text(
                 text = "Theater",
@@ -129,9 +146,12 @@ fun DetailMovieContent(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 items = theaters
             ) {
-                selectedIndex = it
-                selectedDate = 0
-                selectedTime = 0
+                selectedTheaterIndex = it
+                selectedDateIndex = 0
+                selectedTimeIndex = 0
+
+                alphabet = 'A'
+                number = 1
             }
             Spacer(modifier = Modifier.height(32.dp))
             Text(
@@ -153,10 +173,13 @@ fun DetailMovieContent(
 
                     ScheduleTimeCard(
                         text = format.format(parsingDate),
-                        isSelected = selectedDate == it,
+                        isSelected = selectedDateIndex == it,
                         modifier = Modifier.clickable {
-                            selectedDate = it
-                            selectedTime = 0
+                            selectedDateIndex = it
+                            selectedTimeIndex = 0
+
+                            alphabet = 'A'
+                            number = 1
                         }
                     )
                 }
@@ -181,11 +204,63 @@ fun DetailMovieContent(
 
                     ScheduleTimeCard(
                         text = format.format(parsingTime),
-                        isSelected = selectedTime == it,
+                        isSelected = selectedTimeIndex == it,
                         modifier = Modifier.clickable {
-                            selectedTime = it
+                            selectedTimeIndex = it
+
+                            alphabet = 'A'
+                            number = 1
                         }
                     )
+                }
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+            Text(
+                text = "Choose Seat",
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+                modifier = Modifier.padding(start = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LazyRow(
+                modifier = Modifier,
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp)
+            ) {
+                items(section){ sectionIndex ->
+                    alphabet = 'A'
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ){
+                        for (columnIndex in 0 until column) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                for (rowIndex in 0 until row / section) {
+                                    val seatNumber = "$alphabet$number"
+                                    var isSelected by remember {
+                                        mutableStateOf(false)
+                                    }
+                                    val isAvailable = !listFilledSeat.any { seatNumber == it }
+                                    SeatCard(
+                                        seatNumber = seatNumber,
+                                        isSelected = isSelected,
+                                        onSelected = {
+                                            isSelected = !isSelected
+                                            if (isSelected) listSelectedSeat.remove(it)
+                                            else listSelectedSeat.add(it)
+                                        },
+                                        isAvailable = isAvailable
+                                    )
+
+                                    number++
+                                }
+                            }
+                            number = 1
+                            alphabet++
+                        }
+                    }
                 }
             }
         }
