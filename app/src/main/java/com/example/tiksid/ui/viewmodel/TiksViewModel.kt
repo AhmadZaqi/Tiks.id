@@ -78,10 +78,12 @@ class TiksViewModel: ViewModel() {
 
             val image = getMovieImage(movie.getInt("id"))
             _moviePoster.value = image
+
+            getMovieSchedule(id)
         }
     }
 
-    fun getMovieSchedule(id: Int){
+    private fun getMovieSchedule(id: Int){
         viewModelScope.launch {
             val req = APIRequest("Schedule/$id").execute()
             val schedule = JSONArray(req.data)
